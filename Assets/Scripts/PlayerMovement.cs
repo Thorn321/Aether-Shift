@@ -8,6 +8,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Environment Check")]
     [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private LayerMask enemyLayer;
     [SerializeField] private float wallCheckDistance = 0.05f;
     [SerializeField] private Vector2 wallCheckBottomOffset = new Vector2(0, -0.4f);
     [SerializeField] private Vector2 wallCheckTopOffset = new Vector2(0, 0.4f);
@@ -18,6 +19,9 @@ public class PlayerMovement : MonoBehaviour
     private bool wallLeft;
     private bool wallRight;
     private bool isGrounded;
+    private bool isKnocked = false;
+    private float knockDuration = 0.2f;
+    private float knockTimer = 0f;
 
     void Awake()
     {
@@ -26,6 +30,14 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        if (isKnocked)
+        {
+            knockTimer -= Time.deltaTime;
+            if (knockTimer <= 0)
+                isKnocked = false;
+            return; // bìhem knockbacku neovládáš hráèe
+        }
+
         CheckGround();
         CheckWalls();
         Move();
@@ -34,8 +46,12 @@ public class PlayerMovement : MonoBehaviour
 
     void CheckGround()
     {
-        isGrounded = Physics2D.OverlapCircle((Vector2)transform.position + groundCheckOffset, groundCheckRadius, groundLayer);
-        
+        Vector2 checkPos = (Vector2)transform.position + groundCheckOffset;
+
+        // Detekuje zem nebo enemy
+        isGrounded = Physics2D.OverlapCircle(checkPos, groundCheckRadius, groundLayer)
+            || Physics2D.OverlapCircle(checkPos, groundCheckRadius, enemyLayer);
+
         Debug.DrawRay(transform.position + (Vector3)groundCheckOffset, Vector3.down * groundCheckRadius, isGrounded ? Color.green : Color.red);
     }
 
@@ -74,5 +90,13 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
         }
+    }
+
+    public void ApplyKnockback(Vector2 direction, float force)
+    {
+        rb.linearVelocity = Vector2.zero;
+        rb.AddForce(new Vector2(direction.x, direction.y + 0.5f) * force, ForceMode2D.Impulse);
+        isKnocked = true;
+        knockTimer = knockDuration;
     }
 }

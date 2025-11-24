@@ -130,7 +130,6 @@ GameObject:
   - component: {fileID: 31448457}
   - component: {fileID: 31448456}
   - component: {fileID: 31448455}
-  - component: {fileID: 31448458}
   m_Layer: 3
   m_Name: Ground2
   m_TagString: Ground
@@ -257,19 +256,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 103536397}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
---- !u!114 &31448458
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 31448454}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb54edcf11d72ac4faea0a6526891e67, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DimensionObject
-  visibleInDimension: 0
 --- !u!1 &103536396
 GameObject:
   m_ObjectHideFlags: 0
@@ -362,6 +348,7 @@ GameObject:
   - component: {fileID: 455093828}
   - component: {fileID: 455093827}
   - component: {fileID: 455093826}
+  - component: {fileID: 455093829}
   m_Layer: 3
   m_Name: Ground3
   m_TagString: Ground
@@ -488,6 +475,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 103536397}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
+--- !u!114 &455093829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 455093825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb54edcf11d72ac4faea0a6526891e67, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DimensionObject
+  visibleInDimension: 0
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -1238,6 +1238,9 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 64
   wallCheckDistance: 0.05
   wallCheckBottomOffset: {x: 0, y: -0.4}
   wallCheckTopOffset: {x: 0, y: 0.4}
@@ -1402,9 +1405,9 @@ GameObject:
   - component: {fileID: 1499585457}
   - component: {fileID: 1499585456}
   - component: {fileID: 1499585455}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: EnemyWalking
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1418,7 +1421,7 @@ Transform:
   m_GameObject: {fileID: 1499585453}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 6.9088697, y: 0.7113, z: 0}
+  m_LocalPosition: {x: 6, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1439,6 +1442,8 @@ MonoBehaviour:
   moveSpeed: 2
   damage: 1
   damageCooldown: 1
+  knockbackForce: 8
+  verticalBoost: 2
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
