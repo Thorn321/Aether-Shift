@@ -15,13 +15,15 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Vector2 groundCheckOffset = new Vector2(0, -0.6f);
     [SerializeField] private float groundCheckRadius = 0.15f;
 
+    [Header("Starting Point")]
+    [SerializeField] private Transform spawnPoint;
+
     private Rigidbody2D rb;
     private bool wallLeft;
     private bool wallRight;
     private bool isGrounded;
-    private bool isKnocked = false;
-    private float knockDuration = 0.2f;
-    private float knockTimer = 0f;
+    private Vector2 latestCheckpoint;
+    public float fallThreshold = -20f;
 
     void Awake()
     {
@@ -30,12 +32,9 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        if (isKnocked)
+        if (transform.position.y < fallThreshold)
         {
-            knockTimer -= Time.deltaTime;
-            if (knockTimer <= 0)
-                isKnocked = false;
-            return; // bìhem knockbacku neovládáš hráèe
+            ReturnToCheckpoint();
         }
 
         CheckGround();
@@ -92,11 +91,16 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    public void ApplyKnockback(Vector2 direction, float force)
+    public void SetCheckpoint(Vector2 pos)
+    {
+        latestCheckpoint = pos;
+    }
+
+    public void ReturnToCheckpoint()
     {
         rb.linearVelocity = Vector2.zero;
-        rb.AddForce(new Vector2(direction.x, direction.y + 0.5f) * force, ForceMode2D.Impulse);
-        isKnocked = true;
-        knockTimer = knockDuration;
+
+        Vector2 targetPos = latestCheckpoint != Vector2.zero ? latestCheckpoint : spawnPoint.position;
+        transform.position = targetPos;
     }
 }
