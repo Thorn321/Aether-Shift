@@ -10,6 +10,10 @@ public class DimensionManager : MonoBehaviour
 
     public event Action<Dimension> OnDimensionChanged;
 
+    [Header("Cooldown")]
+    [SerializeField] public float switchCooldown = 0.5f;
+    private float lastSwitchTime = -999f;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -23,9 +27,18 @@ public class DimensionManager : MonoBehaviour
 
     private void Update()
     {
+        // Pokus o pøepnutí dimenze
         if (Input.GetKeyDown(KeyCode.E))
         {
-            ToggleDimension();
+            if (Time.time - lastSwitchTime >= switchCooldown)
+            {
+                ToggleDimension();
+                lastSwitchTime = Time.time;
+            }
+            else
+            {
+                // Debug.Log("Cooldown - nemùžeš pøepnout ještì!");
+            }
         }
     }
 
@@ -33,7 +46,10 @@ public class DimensionManager : MonoBehaviour
     {
         currentDimension = currentDimension == Dimension.Light ? Dimension.Dark : Dimension.Light;
         Debug.Log("Pøepnuto na dimenzi: " + currentDimension);
+
         OnDimensionChanged?.Invoke(currentDimension);
-        Camera.main.backgroundColor = (currentDimension == Dimension.Light) ? Color.cyan : Color.mediumPurple;
+
+        Camera.main.backgroundColor =
+            (currentDimension == Dimension.Light) ? Color.cyan : Color.magenta;
     }
 }
