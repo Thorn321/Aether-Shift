@@ -9,20 +9,47 @@ public abstract class Enemy : MonoBehaviour
     public int damage = 1;
     public float damageCooldown = 1f;
 
-    [Header("Knockback Settings")]
-    public float knockbackForce = 0.3f;
-    public float verticalBoost = 0.05f;
+    [Header("Time Settings")]
+    [SerializeField] protected float darkTimeMultiplier = 0.5f;
 
     protected Rigidbody2D rb;
     protected bool movingRight = true;
+
+    protected float timeMultiplier = 1f;
     private float lastDamageTime;
 
     protected virtual void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+
+        // Pøihlášení na zmìnu dimenze
+        if (DimensionManager.Instance != null)
+        {
+            DimensionManager.Instance.OnDimensionChanged += OnDimensionChanged;
+            OnDimensionChanged(DimensionManager.Instance.currentDimension);
+        }
+    }
+
+    protected virtual void OnDestroy()
+    {
+        if (DimensionManager.Instance != null)
+            DimensionManager.Instance.OnDimensionChanged -= OnDimensionChanged;
+    }
+
+    protected void OnDimensionChanged(DimensionManager.Dimension dimension)
+    {
+        timeMultiplier =
+            (dimension == DimensionManager.Dimension.Dark)
+            ? darkTimeMultiplier
+            : 1f;
     }
 
     protected abstract void Move();
+
+    protected virtual void FixedUpdate()
+    {
+        Move();
+    }
 
     protected virtual void OnCollisionEnter2D(Collision2D collision)
     {
@@ -50,7 +77,6 @@ public abstract class Enemy : MonoBehaviour
         Debug.Log($"Enemy hit player! (Enemy: {gameObject.name})");
 
         PlayerMovement pm = player.GetComponent<PlayerMovement>();
-
         if (pm != null)
         {
             pm.ReturnToCheckpoint();

@@ -6,13 +6,18 @@ public class DimensionManager : MonoBehaviour
     public static DimensionManager Instance { get; private set; }
 
     public enum Dimension { Light, Dark }
-    public Dimension currentDimension = Dimension.Light;
+    public Dimension currentDimension { get; private set; } = Dimension.Light;
 
     public event Action<Dimension> OnDimensionChanged;
 
     [Header("Cooldown")]
-    [SerializeField] public float switchCooldown = 0.5f;
+    [SerializeField] private float switchCooldown = 0.5f;
     private float lastSwitchTime = -999f;
+
+    [Header("Dark Dimension Settings")]
+    [SerializeField] private float maxDarkTime = 5f;
+
+    private float darkTimer;
 
     private void Awake()
     {
@@ -21,13 +26,13 @@ public class DimensionManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
 
     private void Update()
     {
-        // Pokus o pøepnutí dimenze
         if (Input.GetKeyDown(KeyCode.E))
         {
             if (Time.time - lastSwitchTime >= switchCooldown)
@@ -35,21 +40,52 @@ public class DimensionManager : MonoBehaviour
                 ToggleDimension();
                 lastSwitchTime = Time.time;
             }
-            else
-            {
-                // Debug.Log("Cooldown - nemùžeš pøepnout ještì!");
-            }
+        }
+
+        if (currentDimension == Dimension.Dark)
+        {
+            darkTimer -= Time.unscaledDeltaTime;
+
+            if (darkTimer <= 0f)
+                ForceReturnToLight();
         }
     }
 
     private void ToggleDimension()
     {
-        currentDimension = currentDimension == Dimension.Light ? Dimension.Dark : Dimension.Light;
-        Debug.Log("Pøepnuto na dimenzi: " + currentDimension);
+        if (currentDimension == Dimension.Light)
+            EnterDark();
+        else
+            ReturnToLight();
+    }
+
+    private void EnterDark()
+    {
+        currentDimension = Dimension.Dark;
+        darkTimer = maxDarkTime;
+
+        if (Camera.main != null)
+            Camera.main.backgroundColor = Color.magenta;
 
         OnDimensionChanged?.Invoke(currentDimension);
+        Debug.Log("Pøepnuto do DARK dimenze");
+    }
 
-        Camera.main.backgroundColor =
-            (currentDimension == Dimension.Light) ? Color.cyan : Color.magenta;
+    private void ReturnToLight()
+    {
+        currentDimension = Dimension.Light;
+
+        if (Camera.main != null)
+            Camera.main.backgroundColor = Color.cyan;
+
+        OnDimensionChanged?.Invoke(currentDimension);
+        Debug.Log("Návrat do LIGHT dimenze");
+    }
+
+    private void ForceReturnToLight()
+    {
+        Debug.Log("Vypršel èas v temné dimenzi!");
+        ReturnToLight();
+        lastSwitchTime = Time.time;
     }
 }
