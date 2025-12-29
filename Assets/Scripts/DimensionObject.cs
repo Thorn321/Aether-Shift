@@ -3,9 +3,10 @@ using UnityEngine;
 public class DimensionObject : MonoBehaviour
 {
     [SerializeField] private DimensionManager.Dimension visibleInDimension;
+
     private Renderer[] renderers;
     private Collider2D[] colliders;
-    private bool subscribed = false;
+    private bool subscribed;
 
     private void Awake()
     {
@@ -20,42 +21,59 @@ public class DimensionObject : MonoBehaviour
 
     private void Start()
     {
-        // Pokud OnEnable bìel døív ne DimensionManager vznikl, Start zajistí pøihlášení
+        // Záloha pro pøípad, e DimensionManager vznikne a po OnEnable
         TrySubscribe();
     }
 
     private void OnDisable()
     {
-        if (subscribed && DimensionManager.Instance != null)
-        {
-            DimensionManager.Instance.OnDimensionChanged -= UpdateVisibility;
-            subscribed = false;
-        }
+        Unsubscribe();
     }
+
+    // ---------------- DIMENSION HANDLING ----------------
 
     private void TrySubscribe()
     {
-        if (subscribed) return;
+        if (subscribed || DimensionManager.Instance == null)
+            return;
 
-        if (DimensionManager.Instance != null)
-        {
-            DimensionManager.Instance.OnDimensionChanged += UpdateVisibility;
-            subscribed = true;
-            UpdateVisibility(DimensionManager.Instance.currentDimension);
-            Debug.Log($"{name}: Subscribed to DimensionManager. Current dimension: {DimensionManager.Instance.currentDimension}");
-        }
+        DimensionManager.Instance.OnDimensionChanged += UpdateVisibility;
+        subscribed = true;
+
+        UpdateVisibility(DimensionManager.Instance.currentDimension);
+        Debug.Log($"{name}: Subscribed to DimensionManager. Current dimension: {DimensionManager.Instance.currentDimension}");
     }
+
+    private void Unsubscribe()
+    {
+        if (!subscribed || DimensionManager.Instance == null)
+            return;
+
+        DimensionManager.Instance.OnDimensionChanged -= UpdateVisibility;
+        subscribed = false;
+    }
+
+    // ---------------- VISIBILITY ----------------
 
     private void UpdateVisibility(DimensionManager.Dimension current)
     {
-        bool isActive = (current == visibleInDimension);
+        bool isActive = current == visibleInDimension;
 
+        SetRenderers(isActive);
+        SetColliders(isActive);
+
+        Debug.Log($"{name}: UpdateVisibility -> {current}. Active: {isActive}");
+    }
+
+    private void SetRenderers(bool state)
+    {
         foreach (var r in renderers)
-            r.enabled = isActive;
+            r.enabled = state;
+    }
 
+    private void SetColliders(bool state)
+    {
         foreach (var c in colliders)
-            c.enabled = isActive;
-
-        Debug.Log($"{name}: UpdateVisibility -> {current}. Renderers enabled: {isActive}");
+            c.enabled = state;
     }
 }

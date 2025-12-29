@@ -11,13 +11,14 @@ public class DimensionManager : MonoBehaviour
     public event Action<Dimension> OnDimensionChanged;
 
     [Header("Cooldown")]
-    [SerializeField] private float switchCooldown = 0.5f;
+    [SerializeField] private float switchCooldown = 0.8f;
     private float lastSwitchTime = -999f;
 
     [Header("Dark Dimension Settings")]
     [SerializeField] private float maxDarkTime = 5f;
-
     private float darkTimer;
+
+    private Camera mainCamera;
 
     private void Awake()
     {
@@ -29,26 +30,37 @@ public class DimensionManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        mainCamera = Camera.main;
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            if (Time.time - lastSwitchTime >= switchCooldown)
-            {
-                ToggleDimension();
-                lastSwitchTime = Time.time;
-            }
-        }
+        HandleInput();
+        UpdateDarkTimer();
+    }
 
-        if (currentDimension == Dimension.Dark)
-        {
-            darkTimer -= Time.unscaledDeltaTime;
+    private void HandleInput()
+    {
+        if (!Input.GetKeyDown(KeyCode.E))
+            return;
 
-            if (darkTimer <= 0f)
-                ForceReturnToLight();
-        }
+        if (Time.time - lastSwitchTime < switchCooldown)
+            return;
+
+        ToggleDimension();
+        lastSwitchTime = Time.time;
+    }
+
+    private void UpdateDarkTimer()
+    {
+        if (currentDimension != Dimension.Dark)
+            return;
+
+        darkTimer -= Time.unscaledDeltaTime;
+
+        if (darkTimer <= 0f)
+            ForceReturnToLight();
     }
 
     private void ToggleDimension()
@@ -64,8 +76,8 @@ public class DimensionManager : MonoBehaviour
         currentDimension = Dimension.Dark;
         darkTimer = maxDarkTime;
 
-        if (Camera.main != null)
-            Camera.main.backgroundColor = Color.magenta;
+        if (mainCamera != null)
+            mainCamera.backgroundColor = Color.magenta;
 
         OnDimensionChanged?.Invoke(currentDimension);
         Debug.Log("Pøepnuto do DARK dimenze");
@@ -75,8 +87,8 @@ public class DimensionManager : MonoBehaviour
     {
         currentDimension = Dimension.Light;
 
-        if (Camera.main != null)
-            Camera.main.backgroundColor = Color.cyan;
+        if (mainCamera != null)
+            mainCamera.backgroundColor = Color.cyan;
 
         OnDimensionChanged?.Invoke(currentDimension);
         Debug.Log("Návrat do LIGHT dimenze");

@@ -3,8 +3,8 @@
 public class EnemyFlying : Enemy
 {
     [Header("Flying Path")]
-    public Transform pointA;
-    public Transform pointB;
+    [SerializeField] private Transform pointA;
+    [SerializeField] private Transform pointB;
 
     private Vector2 worldPointA;
     private Vector2 worldPointB;
@@ -13,40 +13,55 @@ public class EnemyFlying : Enemy
     protected override void Start()
     {
         base.Start();
+        if (!ValidatePoints()) return;
 
-        if (pointA == null || pointB == null)
-        {
-            Debug.LogError($"{name}: FlyingEnemy needs pointA and pointB!");
-            enabled = false;
-            return;
-        }
-
-        // Uložíme si world pozice (nezávislé na parentovi)
-        worldPointA = pointA.position;
-        worldPointB = pointB.position;
-
+        InitializeWorldPoints();
         currentTarget = worldPointB;
     }
 
     protected override void Move()
     {
+        MoveTowardsTarget();
+        CheckArrival();
+    }
+
+    // ---------------- INITIALIZATION ----------------
+
+    private bool ValidatePoints()
+    {
+        if (pointA == null || pointB == null)
+        {
+            Debug.LogError($"{name}: EnemyFlying requires both pointA and pointB!");
+            enabled = false;
+            return false;
+        }
+        return true;
+    }
+
+    private void InitializeWorldPoints()
+    {
+        worldPointA = pointA.position;
+        worldPointB = pointB.position;
+    }
+
+    // ---------------- MOVEMENT ----------------
+
+    private void MoveTowardsTarget()
+    {
         Vector2 position = rb.position;
         Vector2 direction = (currentTarget - position).normalized;
-
         rb.linearVelocity = direction * moveSpeed * timeMultiplier;
+    }
 
-        if (Vector2.Distance(position, currentTarget) < 0.1f)
-        {
+    private void CheckArrival()
+    {
+        if (Vector2.Distance(rb.position, currentTarget) < 0.1f)
             SwitchTarget();
-        }
     }
 
     private void SwitchTarget()
     {
-        currentTarget = (currentTarget == worldPointA)
-            ? worldPointB
-            : worldPointA;
-
+        currentTarget = currentTarget == worldPointA ? worldPointB : worldPointA;
         Flip();
     }
 

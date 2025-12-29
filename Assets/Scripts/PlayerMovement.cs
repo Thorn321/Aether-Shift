@@ -18,78 +18,92 @@ public class PlayerMovement : MonoBehaviour
     [Header("Starting Point")]
     [SerializeField] private Transform spawnPoint;
 
+    [Header("Fall Settings")]
+    [SerializeField] private float fallThreshold = -20f;
+
     private Rigidbody2D rb;
     private bool wallLeft;
     private bool wallRight;
     private bool isGrounded;
     private Vector2 latestCheckpoint;
-    public float fallThreshold = -20f;
 
-    void Awake()
+    private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
     }
 
-    void Update()
+    private void Update()
     {
-        if (transform.position.y < fallThreshold)
-        {
-            ReturnToCheckpoint();
-        }
-
+        CheckFall();
         CheckGround();
         CheckWalls();
-        Move();
-        Jump();
+        HandleMovement();
+        HandleJump();
     }
 
-    void CheckGround()
+    // ---------------- CHECKS ----------------
+
+    private void CheckFall()
+    {
+        if (transform.position.y < fallThreshold)
+            ReturnToCheckpoint();
+    }
+
+    private void CheckGround()
     {
         Vector2 checkPos = (Vector2)transform.position + groundCheckOffset;
 
-        // Detekuje zem nebo enemy
-        isGrounded = Physics2D.OverlapCircle(checkPos, groundCheckRadius, groundLayer)
-            || Physics2D.OverlapCircle(checkPos, groundCheckRadius, enemyLayer);
+        isGrounded =
+            Physics2D.OverlapCircle(checkPos, groundCheckRadius, groundLayer) ||
+            Physics2D.OverlapCircle(checkPos, groundCheckRadius, enemyLayer);
 
-        Debug.DrawRay(transform.position + (Vector3)groundCheckOffset, Vector3.down * groundCheckRadius, isGrounded ? Color.green : Color.red);
+        Debug.DrawRay(
+            transform.position + (Vector3)groundCheckOffset,
+            Vector3.down * groundCheckRadius,
+            isGrounded ? Color.green : Color.red
+        );
     }
 
-    void CheckWalls()
+    private void CheckWalls()
     {
-        Vector2 bottomOrigin = (Vector2)transform.position + wallCheckBottomOffset;
-        Vector2 topOrigin = (Vector2)transform.position + wallCheckTopOffset;
+        Vector2 pos = transform.position;
+        Vector2 bottomOrigin = pos + wallCheckBottomOffset;
+        Vector2 topOrigin = pos + wallCheckTopOffset;
+        float rayLength = wallCheckDistance + 0.5f;
 
-        wallRight = Physics2D.Raycast(bottomOrigin, Vector2.right, wallCheckDistance + 0.5f, groundLayer)
-                 || Physics2D.Raycast(topOrigin, Vector2.right, wallCheckDistance + 0.5f, groundLayer);
+        wallRight =
+            Physics2D.Raycast(bottomOrigin, Vector2.right, rayLength, groundLayer) ||
+            Physics2D.Raycast(topOrigin, Vector2.right, rayLength, groundLayer);
 
-        wallLeft = Physics2D.Raycast(bottomOrigin, Vector2.left, wallCheckDistance + 0.5f, groundLayer)
-                || Physics2D.Raycast(topOrigin, Vector2.left, wallCheckDistance + 0.5f, groundLayer);
+        wallLeft =
+            Physics2D.Raycast(bottomOrigin, Vector2.left, rayLength, groundLayer) ||
+            Physics2D.Raycast(topOrigin, Vector2.left, rayLength, groundLayer);
 
-        // Debug rays
-        Debug.DrawRay(bottomOrigin, Vector2.right * (wallCheckDistance + 0.5f), Color.red);
-        Debug.DrawRay(bottomOrigin, Vector2.left * (wallCheckDistance + 0.5f), Color.red);
-        Debug.DrawRay(topOrigin, Vector2.right * (wallCheckDistance + 0.5f), Color.red);
-        Debug.DrawRay(topOrigin, Vector2.left * (wallCheckDistance + 0.5f), Color.red);
+        Debug.DrawRay(bottomOrigin, Vector2.right * rayLength, Color.red);
+        Debug.DrawRay(bottomOrigin, Vector2.left * rayLength, Color.red);
+        Debug.DrawRay(topOrigin, Vector2.right * rayLength, Color.red);
+        Debug.DrawRay(topOrigin, Vector2.left * rayLength, Color.red);
     }
 
-    void Move()
+    // ---------------- MOVEMENT ----------------
+
+    private void HandleMovement()
     {
         float moveInput = Input.GetAxis("Horizontal");
 
-        // Block movement into the wall
         if ((moveInput > 0 && wallRight) || (moveInput < 0 && wallLeft))
             moveInput = 0;
 
         rb.linearVelocity = new Vector2(moveInput * moveSpeed, rb.linearVelocity.y);
     }
 
-    void Jump()
+    private void HandleJump()
     {
         if (Input.GetButtonDown("Jump") && isGrounded)
-        {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-        }
     }
+
+    // ---------------- CHECKPOINTS ----------------
 
     public void SetCheckpoint(Vector2 pos)
     {
@@ -99,8 +113,8 @@ public class PlayerMovement : MonoBehaviour
     public void ReturnToCheckpoint()
     {
         rb.linearVelocity = Vector2.zero;
-
-        Vector2 targetPos = latestCheckpoint != Vector2.zero ? latestCheckpoint : spawnPoint.position;
-        transform.position = targetPos;
+        transform.position = latestCheckpoint != Vector2.zero
+            ? latestCheckpoint
+            : (Vector2)spawnPoint.position;
     }
 }
