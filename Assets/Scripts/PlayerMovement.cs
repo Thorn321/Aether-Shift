@@ -54,8 +54,7 @@ public class PlayerMovement : MonoBehaviour
         Vector2 checkPos = (Vector2)transform.position + groundCheckOffset;
 
         isGrounded =
-            Physics2D.OverlapCircle(checkPos, groundCheckRadius, groundLayer) ||
-            Physics2D.OverlapCircle(checkPos, groundCheckRadius, enemyLayer);
+            Physics2D.OverlapCircle(checkPos, groundCheckRadius, groundLayer);
 
         Debug.DrawRay(
             transform.position + (Vector3)groundCheckOffset,

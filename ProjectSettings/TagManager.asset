@@ -43,13 +43,13 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: BackgroundLayer1
+  - name: Background
     uniqueID: 1641297683
     locked: 0
-  - name: BackgroundLayer2
+  - name: 
     uniqueID: 1486193361
     locked: 0
-  - name: BackgroundLayer3
+  - name: 
     uniqueID: 2983059451
     locked: 0
   - name: Terrain

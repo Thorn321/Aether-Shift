@@ -50,7 +50,9 @@ public class EnemyFlying : Enemy
     {
         Vector2 position = rb.position;
         Vector2 direction = (currentTarget - position).normalized;
+
         rb.linearVelocity = direction * moveSpeed * timeMultiplier;
+        Flip(direction);
     }
 
     private void CheckArrival()
@@ -62,12 +64,13 @@ public class EnemyFlying : Enemy
     private void SwitchTarget()
     {
         currentTarget = currentTarget == worldPointA ? worldPointB : worldPointA;
-        Flip();
     }
 
-    private void Flip()
+    private void Flip(Vector2 direction)
     {
-        movingRight = !movingRight;
-        transform.Rotate(0f, 180f, 0f);
+        if (direction.x == 0) return;
+
+        float scaleX = direction.x > 0 ? 1f : -1f;
+        transform.localScale = new Vector3(scaleX, 1f, 1f);
     }
 }
