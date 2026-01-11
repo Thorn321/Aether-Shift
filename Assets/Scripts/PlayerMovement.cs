@@ -19,7 +19,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform spawnPoint;
 
     [Header("Fall Settings")]
-    [SerializeField] private float fallThreshold = -20f;
+    [SerializeField] private float fallThreshold = -10f;
 
     private Rigidbody2D rb;
     private bool wallLeft;
