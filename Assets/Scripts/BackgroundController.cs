@@ -5,8 +5,8 @@ public class BackgroundParallax : MonoBehaviour
     [Header("Camera & Parallax Settings")]
     public Transform cam;           // Cinemachine Virtual Camera
     public float parallaxX = 0.5f;  // horizontální parallax
-    public float maxHorizontalJump = 50f; // pokud je rozdíl větší → okamžitý přesun
-    public float moveSpeedX = 50f;  // horizontální rychlost dorovnání
+    public float maxHorizontalJump = 20f; // pokud je rozdíl větší → okamžitý přesun
+    public float moveSpeedX = 250f;  // horizontální rychlost dorovnání
 
     private float startPosX;
     private float lengthX;

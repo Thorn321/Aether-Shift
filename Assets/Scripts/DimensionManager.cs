@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using UnityEngine;
 
 public class DimensionManager : MonoBehaviour
@@ -17,6 +17,9 @@ public class DimensionManager : MonoBehaviour
     [Header("Dark Dimension Settings")]
     [SerializeField] private float maxDarkTime = 5f;
     private float darkTimer;
+
+    [Header("Camera Effects")]
+    [SerializeField] private DarkDimensionEffect darkEffect;
 
     private Camera mainCamera;
 
@@ -79,8 +82,10 @@ public class DimensionManager : MonoBehaviour
         if (mainCamera != null)
             mainCamera.backgroundColor = Color.magenta;
 
+        darkEffect.SetDark(true);
+
         OnDimensionChanged?.Invoke(currentDimension);
-        Debug.Log("P¯epnuto do DARK dimenze");
+        Debug.Log("P≈ôepnuto do DARK dimenze");
     }
 
     private void ReturnToLight()
@@ -90,13 +95,15 @@ public class DimensionManager : MonoBehaviour
         if (mainCamera != null)
             mainCamera.backgroundColor = Color.cyan;
 
+        darkEffect.SetDark(false);
+
         OnDimensionChanged?.Invoke(currentDimension);
-        Debug.Log("N·vrat do LIGHT dimenze");
+        Debug.Log("N√°vrat do LIGHT dimenze");
     }
 
     private void ForceReturnToLight()
     {
-        Debug.Log("Vypröel Ëas v temnÈ dimenzi!");
+        Debug.Log("Vypr≈°el ƒças v temn√© dimenzi!");
         ReturnToLight();
         lastSwitchTime = Time.time;
     }
