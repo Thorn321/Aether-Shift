@@ -14,6 +14,10 @@ public class DimensionManager : MonoBehaviour
     [SerializeField] private float switchCooldown = 0.8f;
     private float lastSwitchTime = -999f;
 
+    [Header("Tilemaps")]
+    [SerializeField] private GameObject tilemapLight;
+    [SerializeField] private GameObject tilemapDark;
+
     [Header("Dark Dimension Settings")]
     [SerializeField] private float maxDarkTime = 5f;
     private float darkTimer;
@@ -35,6 +39,7 @@ public class DimensionManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         mainCamera = Camera.main;
+        UpdateTilemaps();
     }
 
     private void Update()
@@ -83,6 +88,7 @@ public class DimensionManager : MonoBehaviour
             mainCamera.backgroundColor = Color.magenta;
 
         darkEffect.SetDark(true);
+        UpdateTilemaps();
 
         OnDimensionChanged?.Invoke(currentDimension);
         Debug.Log("Přepnuto do DARK dimenze");
@@ -96,6 +102,7 @@ public class DimensionManager : MonoBehaviour
             mainCamera.backgroundColor = Color.cyan;
 
         darkEffect.SetDark(false);
+        UpdateTilemaps();
 
         OnDimensionChanged?.Invoke(currentDimension);
         Debug.Log("Návrat do LIGHT dimenze");
@@ -106,5 +113,14 @@ public class DimensionManager : MonoBehaviour
         Debug.Log("Vypršel čas v temné dimenzi!");
         ReturnToLight();
         lastSwitchTime = Time.time;
+    }
+
+    private void UpdateTilemaps()
+    {
+        if (tilemapLight != null)
+            tilemapLight.SetActive(currentDimension == Dimension.Light);
+
+        if (tilemapDark != null)
+            tilemapDark.SetActive(currentDimension == Dimension.Dark);
     }
 }

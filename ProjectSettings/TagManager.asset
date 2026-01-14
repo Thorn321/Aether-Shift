@@ -49,20 +49,20 @@ TagManager:
   - name: 
     uniqueID: 1486193361
     locked: 0
-  - name: 
+  - name: CaveBackground
     uniqueID: 2983059451
     locked: 0
   - name: Terrain
     uniqueID: 65058007
+    locked: 0
+  - name: Foreground
+    uniqueID: 2665248515
     locked: 0
   - name: Enemies
     uniqueID: 2418748771
     locked: 0
   - name: Player
     uniqueID: 1008248943
-    locked: 0
-  - name: Foreground
-    uniqueID: 2665248515
     locked: 0
   m_RenderingLayers:
   - Default
