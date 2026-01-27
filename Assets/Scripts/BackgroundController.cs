@@ -35,7 +35,7 @@ public class BackgroundParallax : MonoBehaviour
         if (deltaX > startPosX + lengthX) startPosX += lengthX;
         else if (deltaX < startPosX - lengthX) startPosX -= lengthX;
 
-        // Top edge zarovnat na top kamery + overscan
+        // Top edge zarovnat na top kamery + offset
         float targetY = cam.position.y + camComp.orthographicSize - heightY / 2f + topOffset;
 
         Vector3 targetPos = new Vector3(targetX, targetY, transform.position.z);
