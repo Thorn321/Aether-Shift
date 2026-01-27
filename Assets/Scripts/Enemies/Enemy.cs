@@ -88,6 +88,15 @@ public abstract class Enemy : MonoBehaviour
 
         Debug.Log($"Enemy hit player! (Enemy: {name})");
 
+        // 1) Damage pøes PlayerHealth
+        PlayerHealth health = collider.GetComponent<PlayerHealth>();
+        if (health != null)
+        {
+            health.TakeDamage(damage);
+            return;
+        }
+
+        // 2) Fallback, kdyby PlayerHealth nebyl pøidaný
         PlayerMovement player = collider.GetComponent<PlayerMovement>();
         if (player != null)
             player.ReturnToCheckpoint();

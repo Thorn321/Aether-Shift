@@ -1377,7 +1377,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 526ca94ebd53e2e4ea9631207445e3e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DimensionManager
-  switchCooldown: 0.8
+  switchCooldown: 1
   tilemapLight: {fileID: 1513129225}
   tilemapDark: {fileID: 139801590}
   maxDarkTime: 8
@@ -1599,6 +1599,11 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &358861867 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7026352076801718649, guid: 91604f5d09dd80f4c8be86d078380850, type: 3}
+  m_PrefabInstance: {fileID: 7328387520592922096}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &390206855
 GameObject:
   m_ObjectHideFlags: 0
@@ -4305,6 +4310,20 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7827121071210084866, guid: 91604f5d09dd80f4c8be86d078380850, type: 3}
   m_PrefabInstance: {fileID: 7328387520592922096}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1270476269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 358861867}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 686cd1c617b19d742b1a5220922d708b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
+  maxLives: 5
+  invincibilityTime: 0.8
 --- !u!1 &1289419956
 GameObject:
   m_ObjectHideFlags: 0
@@ -10426,7 +10445,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7026352076801718649, guid: 91604f5d09dd80f4c8be86d078380850, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1270476269}
   m_SourcePrefab: {fileID: 100100000, guid: 91604f5d09dd80f4c8be86d078380850, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

@@ -36,7 +36,7 @@ public class DimensionManager : MonoBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject);
+        // DontDestroyOnLoad(gameObject);
 
         mainCamera = Camera.main;
         UpdateTilemaps();
@@ -108,9 +108,9 @@ public class DimensionManager : MonoBehaviour
         Debug.Log("Návrat do LIGHT dimenze");
     }
 
-    private void ForceReturnToLight()
+    public void ForceReturnToLight()
     {
-        Debug.Log("Vypršel čas v temné dimenzi!");
+        Debug.Log("Vypršel čas v temné dimenzi nebo si dostal damage!");
         ReturnToLight();
         lastSwitchTime = Time.time;
     }
