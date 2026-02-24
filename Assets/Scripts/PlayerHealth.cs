@@ -6,7 +6,9 @@ public class PlayerHealth : MonoBehaviour
 {
     [Header("Health")]
     [SerializeField] private int maxLives = 5;
+    public int MaxLives => maxLives;
     public int CurrentLives { get; private set; }
+    [SerializeField] private HealthBar healthUI;
 
     [Header("Invincibility")]
     [SerializeField] private float invincibilityTime = 0.8f;
@@ -31,6 +33,8 @@ public class PlayerHealth : MonoBehaviour
         movement = GetComponent<PlayerMovement>();
         anim = GetComponentInChildren<Animator>();
         rb = GetComponent<Rigidbody2D>();
+        if (healthUI == null)
+            healthUI = Object.FindFirstObjectByType<HealthBar>();
 
         CurrentLives = maxLives;
     }
@@ -54,6 +58,8 @@ public class PlayerHealth : MonoBehaviour
         }
 
         CurrentLives = Mathf.Clamp(CurrentLives - amount, 0, maxLives);
+        if (healthUI != null)
+            healthUI.UpdateHealth(CurrentLives);
         Debug.Log($"Player took damage: {amount}. Lives: {CurrentLives}/{maxLives}");
 
         if (CurrentLives <= 0)

@@ -50,7 +50,7 @@ public class DimensionManager : MonoBehaviour
 
     private void HandleInput()
     {
-        if (!Input.GetKeyDown(KeyCode.E))
+        if (!Input.GetKeyDown(KeyCode.F))
             return;
 
         if (Time.time - lastSwitchTime < switchCooldown)
