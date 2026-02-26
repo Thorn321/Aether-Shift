@@ -3,8 +3,8 @@ using UnityEngine;
 public class LockedDoor : MonoBehaviour
 {
     [SerializeField] private string requiredKeyId = "blue_key";
-    [SerializeField] private GameObject doorVisual;      // sprite/anim
-    [SerializeField] private Collider2D doorCollider;    // collider blokující průchod
+    [SerializeField] private GameObject doorVisual;
+    [SerializeField] private Collider2D doorCollider;
     [SerializeField] private bool destroyOnUnlock = false;
 
     private bool unlocked;
@@ -15,7 +15,8 @@ public class LockedDoor : MonoBehaviour
         if (doorVisual == null) doorVisual = gameObject;
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    // Ze sensoru
+    public void TryUnlock(Collider2D other)
     {
         if (unlocked) return;
 
@@ -36,7 +37,6 @@ public class LockedDoor : MonoBehaviour
             return;
         }
 
-        // “otevření”: vypneme collider, schováme vizuál (nebo spustíš animaci)
         if (doorCollider != null) doorCollider.enabled = false;
         if (doorVisual != null) doorVisual.SetActive(false);
     }
