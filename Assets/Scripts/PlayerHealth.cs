@@ -8,7 +8,9 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private int maxLives = 5;
     public int MaxLives => maxLives;
     public int CurrentLives { get; private set; }
-    [SerializeField] private HealthBar healthUI;
+
+    // ✅ Event: UI se přihlásí a bude dostávat změny
+    public System.Action<int, int> OnHealthChanged; // (current, max)
 
     [Header("Invincibility")]
     [SerializeField] private float invincibilityTime = 0.8f;
@@ -33,10 +35,11 @@ public class PlayerHealth : MonoBehaviour
         movement = GetComponent<PlayerMovement>();
         anim = GetComponentInChildren<Animator>();
         rb = GetComponent<Rigidbody2D>();
-        if (healthUI == null)
-            healthUI = Object.FindFirstObjectByType<HealthBar>();
 
         CurrentLives = maxLives;
+
+        // ✅ po startu pošli hodnotu UI
+        OnHealthChanged?.Invoke(CurrentLives, maxLives);
     }
 
     public void TakeDamage(int amount)
@@ -58,8 +61,10 @@ public class PlayerHealth : MonoBehaviour
         }
 
         CurrentLives = Mathf.Clamp(CurrentLives - amount, 0, maxLives);
-        if (healthUI != null)
-            healthUI.UpdateHealth(CurrentLives);
+
+        // ✅ pošli změnu UI (a komukoliv dalšímu)
+        OnHealthChanged?.Invoke(CurrentLives, maxLives);
+
         Debug.Log($"Player took damage: {amount}. Lives: {CurrentLives}/{maxLives}");
 
         if (CurrentLives <= 0)
@@ -92,13 +97,11 @@ public class PlayerHealth : MonoBehaviour
         if (rb != null)
             rb.linearVelocity = Vector2.zero;
 
-        // Death trigger
         if (anim != null)
             anim.SetTrigger(DieHash);
 
         yield return new WaitForSeconds(deathAnimDelay);
 
-        // pojistka – zamkne poslední frame
         if (anim != null)
             anim.enabled = false;
 

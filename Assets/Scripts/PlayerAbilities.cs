@@ -8,9 +8,13 @@ public class PlayerAbilities : MonoBehaviour
     [SerializeField] private bool dashUnlocked = true;
 
     [Header("Double Jump")]
-    [SerializeField] private int maxJumps = 2;                 // 1 = normál, 2 = double jump
-    [SerializeField] private float jumpCooldown = 0.12f;       // pauza mezi 1. a 2. skokem
-    [SerializeField] private float groundResetLock = 0.05f;    // krátký lock po skoku, aby groundcheck hned neresetoval
+    [SerializeField] private int maxJumps = 2;
+    [SerializeField] private float jumpCooldown = 0.12f;
+    [SerializeField] private float groundResetLock = 0.05f;
+
+    // síla double jumpu
+    [SerializeField, Range(0.5f, 1f)] private float doubleJumpMultiplier = 0.85f;
+
     private int jumpsLeft;
     private float lastJumpTime = -999f;
     private float lockGroundResetUntil = -999f;
@@ -107,8 +111,12 @@ public class PlayerAbilities : MonoBehaviour
 
     private void DoJump()
     {
+        // když stojíš na zemi => plná síla
+        // když nejsi na zemi (double jump) => slabší
+        float force = movement.IsGrounded ? movement.JumpForce : movement.JumpForce * doubleJumpMultiplier;
+
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
-        rb.linearVelocity = new Vector2(rb.linearVelocity.x, movement.JumpForce);
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, force);
 
         movement.PlayJumpAnim();
     }
