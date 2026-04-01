@@ -1,0 +1,14 @@
+{
+  "items": [
+    { "key": "start", "value": "Spustit hru" },
+    { "key": "options", "value": "Nastavení" },
+    { "key": "back", "value": "Zpět" },
+    { "key": "language_selection", "value": "Jazyk Hry" },
+    { "key": "option_cz_lang", "value": "Česky" },
+    { "key": "option_en_lang", "value": "English" },
+    { "key": "master_volume", "value": "Hlasitost Hry" },
+    { "key": "sfx_volume", "value": "Hlasitost SFX" },
+    { "key": "music_volume", "value": "Hlasitost Hudby" },
+    { "key": "quit", "value": "Ukončit hru" }
+  ]
+}

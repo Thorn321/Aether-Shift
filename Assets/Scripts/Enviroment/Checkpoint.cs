@@ -5,6 +5,9 @@ public class Checkpoint : MonoBehaviour
     private bool activated = false;
     private SpriteRenderer sr;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip checkpointSound;
+
     private void Start()
     {
         sr = GetComponent<SpriteRenderer>();
@@ -23,6 +26,9 @@ public class Checkpoint : MonoBehaviour
                 // Uložení checkpointu
                 player.SetCheckpoint(transform.position);
                 activated = true;
+
+                if (checkpointSound != null)
+                    SFXManager.Instance.PlaySound(checkpointSound, 1f);
 
                 Debug.Log("Checkpoint uložen: " + transform.position);
 

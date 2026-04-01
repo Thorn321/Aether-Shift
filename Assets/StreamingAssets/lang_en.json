@@ -1,0 +1,14 @@
+{
+  "items": [
+    { "key": "start", "value": "Start Game" },
+    { "key": "options", "value": "Options" },
+    { "key": "back", "value": "Back" },
+    { "key": "language_selection", "value": "Game Language" },
+    { "key": "option_cz_lang", "value": "Česky" },
+    { "key": "option_en_lang", "value": "English" },
+    { "key": "master_volume", "value": "Master Volume" },
+    { "key": "sfx_volume", "value": "SFX Volume" },
+    { "key": "music_volume", "value": "Music Volume" },
+    { "key": "quit", "value": "Quit Game" }
+  ]
+}

@@ -29,7 +29,11 @@ public class PlayerAbilities : MonoBehaviour
     private bool isDashing;
 
     [Header("Graphics (for facing direction)")]
-    [SerializeField] private Transform graphics; // sem přetáhni Graphics child (tam kde flipuješ sprite)
+    [SerializeField] private Transform graphics;
+
+    [Header("Audio")]
+    [SerializeField] private AudioClip dashSound;
+    [SerializeField] private AudioClip doubleJumpSound;
 
     private PlayerMovement movement;
     private Rigidbody2D rb;
@@ -104,6 +108,8 @@ public class PlayerAbilities : MonoBehaviour
 
         DoJump();
         jumpsLeft--;
+        if (doubleJumpSound != null)
+            SFXManager.Instance.PlaySound(doubleJumpSound, 1.6f);
 
         lastJumpTime = Time.time;
         lockGroundResetUntil = Time.time + groundResetLock; // zabrání okamžitému resetu skoků po odrazu
@@ -144,6 +150,8 @@ public class PlayerAbilities : MonoBehaviour
     {
         lastDashTime = Time.time;
         isDashing = true;
+        if (dashSound != null)
+            SFXManager.Instance.PlaySoundRandomPitch(dashSound, 1f, 1.3f);
 
         float originalGravity = rb.gravityScale;
         rb.gravityScale = 0f;

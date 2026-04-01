@@ -8,7 +8,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Environment Check")]
     [SerializeField] private LayerMask groundLayer;
-    [SerializeField] private LayerMask enemyLayer; // zatím nevyužito
+    [SerializeField] private LayerMask enemyLayer;
     [SerializeField] private float wallCheckDistance = 0.05f;
     [SerializeField] private Vector2 wallCheckBottomOffset = new Vector2(0, -0.4f);
     [SerializeField] private Vector2 wallCheckTopOffset = new Vector2(0, 0.4f);
@@ -24,6 +24,12 @@ public class PlayerMovement : MonoBehaviour
     [Header("Graphics")]
     [SerializeField] private Transform graphics;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip jumpSound;
+    [SerializeField] private AudioClip landSound;
+    [SerializeField] private AudioClip[] footstepSounds;
+    [SerializeField] private float footstepInterval = 0.4f;
+
     private Rigidbody2D rb;
     private PlayerHealth health;
     private Animator anim;
@@ -31,25 +37,21 @@ public class PlayerMovement : MonoBehaviour
     private bool wallLeft;
     private bool wallRight;
     private bool isGrounded;
+    private bool wasGrounded;
+
+    private float footstepTimer;
 
     private Vector2 latestCheckpoint;
 
-    // ===== SPEED BOOST SUPPORT =====
-    // 1 = normální rychlost, 1.5 = +50% rychlost atd.
     public float SpeedMultiplier { get; set; } = 1f;
 
-    // ---- Public getters pro ability systém ----
     public bool IsGrounded => isGrounded;
     public Rigidbody2D RB => rb;
     public float JumpForce => jumpForce;
 
-    // Pokud někde používáš MoveSpeed, je lepší vracet aktuální rychlost (už s multiplikátorem)
     public float MoveSpeed => moveSpeed * SpeedMultiplier;
-
-    // (Volitelně) když chceš někde základní rychlost bez buffu
     public float BaseMoveSpeed => moveSpeed;
 
-    // Hash parametry Animatoru
     private static readonly int SpeedHash = Animator.StringToHash("Speed");
     private static readonly int GroundedHash = Animator.StringToHash("Grounded");
     private static readonly int HurtHash = Animator.StringToHash("Hurt");
@@ -98,15 +100,17 @@ public class PlayerMovement : MonoBehaviour
     {
         Vector2 checkPos = (Vector2)transform.position + groundCheckOffset;
 
-        isGrounded =
+        bool groundedNow =
             Physics2D.OverlapCircle(checkPos, groundCheckRadius, groundLayer);
-        // || Physics2D.OverlapCircle(checkPos, groundCheckRadius, enemyLayer);
 
-        Debug.DrawRay(
-            transform.position + (Vector3)groundCheckOffset,
-            Vector3.down * groundCheckRadius,
-            isGrounded ? Color.green : Color.red
-        );
+        if (!wasGrounded && groundedNow)
+        {
+            if (landSound != null)
+                SFXManager.Instance.PlaySoundRandomPitch(landSound, 0.9f, 1.3f);
+        }
+
+        wasGrounded = groundedNow;
+        isGrounded = groundedNow;
     }
 
     private void CheckWalls()
@@ -125,11 +129,6 @@ public class PlayerMovement : MonoBehaviour
         wallLeft =
             Physics2D.Raycast(bottomOrigin, Vector2.left, rayLength, groundLayer) ||
             Physics2D.Raycast(topOrigin, Vector2.left, rayLength, groundLayer);
-
-        Debug.DrawRay(bottomOrigin, Vector2.right * rayLength, Color.red);
-        Debug.DrawRay(bottomOrigin, Vector2.left * rayLength, Color.red);
-        Debug.DrawRay(topOrigin, Vector2.right * rayLength, Color.red);
-        Debug.DrawRay(topOrigin, Vector2.left * rayLength, Color.red);
     }
 
     // ---------------- MOVEMENT ----------------
@@ -138,19 +137,48 @@ public class PlayerMovement : MonoBehaviour
     {
         float moveInput = Input.GetAxisRaw("Horizontal");
 
-        // blokace směru při zdi
         if ((moveInput > 0 && wallRight) || (moveInput < 0 && wallLeft))
             moveInput = 0f;
 
-        // použij moveSpeed * SpeedMultiplier
         float currentSpeed = moveSpeed * SpeedMultiplier;
         rb.linearVelocity = new Vector2(moveInput * currentSpeed, rb.linearVelocity.y);
 
-        // Flip grafiky
+        // Flip
         if (graphics != null && moveInput != 0f)
         {
             float scaleX = moveInput > 0f ? 1f : -1f;
             graphics.localScale = new Vector3(scaleX, 1f, 1f);
+        }
+
+        // Footsteps
+        if (isGrounded && Mathf.Abs(rb.linearVelocity.x) > 0.1f)
+        {
+            footstepTimer -= Time.deltaTime;
+
+            if (footstepTimer <= 0f)
+            {
+                if (footstepSounds.Length > 0)
+                {
+                    int i = Random.Range(0, footstepSounds.Length);
+                    SFXManager.Instance.PlaySoundRandomPitch(footstepSounds[i], 0.9f, 1.5f);
+                }
+
+                footstepTimer = footstepInterval;
+            }
+        }
+        else
+        {
+            footstepTimer = 0f;
+        }
+
+        if (Input.GetButtonDown("Jump") && isGrounded)
+        {
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+
+            if (jumpSound != null)
+                SFXManager.Instance.PlaySoundRandomPitch(jumpSound, 0.9f, 1.3f);
+
+            PlayJumpAnim();
         }
     }
 
@@ -161,7 +189,6 @@ public class PlayerMovement : MonoBehaviour
         if (anim == null)
             return;
 
-        // Reálná rychlost
         float speed = Mathf.Abs(rb.linearVelocity.x);
         anim.SetFloat(SpeedHash, speed);
 

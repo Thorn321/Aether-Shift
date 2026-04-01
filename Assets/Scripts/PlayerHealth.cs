@@ -9,7 +9,7 @@ public class PlayerHealth : MonoBehaviour
     public int MaxLives => maxLives;
     public int CurrentLives { get; private set; }
 
-    // ✅ Event: UI se přihlásí a bude dostávat změny
+    // Event: UI se přihlásí a bude dostávat změny
     public System.Action<int, int> OnHealthChanged; // (current, max)
 
     [Header("Invincibility")]
@@ -19,6 +19,10 @@ public class PlayerHealth : MonoBehaviour
     [Header("Animation Timings")]
     [SerializeField] private float hurtAnimDelay = 1f;
     [SerializeField] private float deathAnimDelay = 5f;
+
+    [Header("Audio")]
+    [SerializeField] private AudioClip hitSound;
+    [SerializeField] private AudioClip deathSound;
 
     private PlayerMovement movement;
     private Animator anim;
@@ -38,7 +42,7 @@ public class PlayerHealth : MonoBehaviour
 
         CurrentLives = maxLives;
 
-        // ✅ po startu pošli hodnotu UI
+        // Po startu pošli hodnotu UI
         OnHealthChanged?.Invoke(CurrentLives, maxLives);
     }
 
@@ -62,7 +66,7 @@ public class PlayerHealth : MonoBehaviour
 
         CurrentLives = Mathf.Clamp(CurrentLives - amount, 0, maxLives);
 
-        // ✅ pošli změnu UI (a komukoliv dalšímu)
+        // Pošli změnu UI (a komukoliv dalšímu)
         OnHealthChanged?.Invoke(CurrentLives, maxLives);
 
         Debug.Log($"Player took damage: {amount}. Lives: {CurrentLives}/{maxLives}");
@@ -78,6 +82,9 @@ public class PlayerHealth : MonoBehaviour
 
     private IEnumerator HurtRoutine()
     {
+        if (hitSound != null)
+            SFXManager.Instance.PlaySoundRandomPitch(hitSound, 0.8f, 1.3f);
+
         if (rb != null)
             rb.linearVelocity = Vector2.zero;
 
@@ -92,6 +99,9 @@ public class PlayerHealth : MonoBehaviour
 
     private IEnumerator DieRoutine()
     {
+        if (deathSound != null)
+            SFXManager.Instance.PlaySound(deathSound, 1f);
+
         isDead = true;
 
         if (rb != null)

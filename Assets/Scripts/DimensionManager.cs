@@ -25,6 +25,10 @@ public class DimensionManager : MonoBehaviour
     [Header("Camera Effects")]
     [SerializeField] private DarkDimensionEffect darkEffect;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip switchToLightSound;
+    [SerializeField] private AudioClip switchToDarkSound;
+
     private Camera mainCamera;
 
     private void Awake()
@@ -90,6 +94,9 @@ public class DimensionManager : MonoBehaviour
         darkEffect.SetDark(true);
         UpdateTilemaps();
 
+        if (switchToDarkSound != null)
+            SFXManager.Instance.PlaySound(switchToDarkSound, 1f);
+
         OnDimensionChanged?.Invoke(currentDimension);
         Debug.Log("Přepnuto do DARK dimenze");
     }
@@ -103,6 +110,9 @@ public class DimensionManager : MonoBehaviour
 
         darkEffect.SetDark(false);
         UpdateTilemaps();
+
+        if (switchToLightSound != null)
+            SFXManager.Instance.PlaySound(switchToLightSound, 1f);
 
         OnDimensionChanged?.Invoke(currentDimension);
         Debug.Log("Návrat do LIGHT dimenze");
