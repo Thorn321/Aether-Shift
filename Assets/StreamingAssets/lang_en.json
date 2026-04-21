@@ -9,6 +9,12 @@
     { "key": "master_volume", "value": "Master Volume" },
     { "key": "sfx_volume", "value": "SFX Volume" },
     { "key": "music_volume", "value": "Music Volume" },
-    { "key": "quit", "value": "Quit Game" }
+    { "key": "quit", "value": "Quit Game" },
+    { "key": "lives", "value": "Lives" },
+    { "key": "level_complete", "value": "LEVEL COMPLETE" },
+    { "key": "next_level", "value": "Next Level" },
+    { "key": "back_to_main_menu", "value": "Go to Main Menu" },
+    { "key": "resume_game", "value": "Resume game" },
+    { "key": "game_paused", "value": "Game Paused" }
   ]
 }

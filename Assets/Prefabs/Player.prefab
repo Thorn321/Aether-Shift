@@ -132,6 +132,7 @@ GameObject:
   - component: {fileID: 2918937118034555475}
   - component: {fileID: 2644324858980712488}
   - component: {fileID: 5463692261733378153}
+  - component: {fileID: 3341586034180600863}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -314,7 +315,13 @@ MonoBehaviour:
   groundCheckRadius: 0.15
   spawnPoint: {fileID: 0}
   fallThreshold: -10
-  graphics: {fileID: 2805599036375626145}
+  graphics: {fileID: 0}
+  jumpSound: {fileID: 8300000, guid: 53b13f8d8a830e24b9b3744e688c4527, type: 3}
+  landSound: {fileID: 8300000, guid: ca581bc2463a2854dba672f0d0cc46c2, type: 3}
+  footstepSounds:
+  - {fileID: 8300000, guid: 253f30aa48cd3294e9275531781ffdb9, type: 3}
+  - {fileID: 8300000, guid: 09f1cf6cc27a2ce46ae5b9dc47fba3d0, type: 3}
+  footstepInterval: 0.6
 --- !u!114 &7490950645706859568
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -331,6 +338,8 @@ MonoBehaviour:
   invincibilityTime: 0.8
   hurtAnimDelay: 0.25
   deathAnimDelay: 0.9
+  hitSound: {fileID: 8300000, guid: 3b8d2e166efbd484c922b97abc6999a5, type: 3}
+  deathSound: {fileID: 8300000, guid: 1df08750721655a498da3acbf852c2c6, type: 3}
 --- !u!114 &2163988717258539180
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -354,6 +363,8 @@ MonoBehaviour:
   dashCooldown: 0.6
   dashKey: 101
   graphics: {fileID: 2805599036375626145}
+  dashSound: {fileID: 0}
+  doubleJumpSound: {fileID: 8300000, guid: 53b13f8d8a830e24b9b3744e688c4527, type: 3}
 --- !u!58 &2918937118034555475
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -415,3 +426,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCollector
   movement: {fileID: 5933506241943033493}
+--- !u!114 &3341586034180600863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7026352076801718649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 686cd1c617b19d742b1a5220922d708b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
+  maxLives: 5
+  invincibilityTime: 0.8
+  hurtAnimDelay: 0.25
+  deathAnimDelay: 0.9
+  hitSound: {fileID: 0}
+  deathSound: {fileID: 0}

@@ -9,6 +9,12 @@
     { "key": "master_volume", "value": "Hlasitost Hry" },
     { "key": "sfx_volume", "value": "Hlasitost SFX" },
     { "key": "music_volume", "value": "Hlasitost Hudby" },
-    { "key": "quit", "value": "Ukončit hru" }
+    { "key": "quit", "value": "Ukončit hru" },
+    { "key": "lives", "value": "Životy" },
+    { "key": "level_complete", "value": "LEVEL DOKONČEN" },
+    { "key": "next_level", "value": "Další level" },
+    { "key": "back_to_main_menu", "value": "Do hlavního menu" },
+    { "key": "resume_game", "value": "Pokračovat ve hře" },
+    { "key": "game_paused", "value": "Hra pozastavena" }
   ]
 }

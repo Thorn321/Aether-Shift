@@ -5,9 +5,12 @@ using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
+    public static MainMenu Instance;
+
     [Header("Panels")]
     public GameObject mainMenuPanel;
     public GameObject optionsPanel;
+    public GameObject background;
 
     [Header("Audio")]
     public AudioMixer mixer;
@@ -20,10 +23,25 @@ public class MainMenu : MonoBehaviour
     private const string MUSIC_KEY = "MusicVolume";
     private const string LANGUAGE_KEY = "Language";
 
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+
+    }
+
     void Start()
     {
         mainMenuPanel.SetActive(true);
         optionsPanel.SetActive(false);
+        background.SetActive(true);
 
         // načti uložená nastavení
         LoadSettings();
@@ -34,11 +52,34 @@ public class MainMenu : MonoBehaviour
         musicSlider.onValueChanged.AddListener(SetMusicVolume);
     }
 
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == "MainMenu")
+        {
+            mainMenuPanel.SetActive(true);
+            optionsPanel.SetActive(false);
+            background.SetActive(true);
+        }
+    }
+
     // ---------------- MENU ----------------
 
     public void OnStartButton()
     {
         Debug.Log("Start button kliknut!");
+        mainMenuPanel.SetActive(false);
+        optionsPanel.SetActive(false);
+        background.SetActive(false);
         SceneManager.LoadScene("Level1");
     }
 

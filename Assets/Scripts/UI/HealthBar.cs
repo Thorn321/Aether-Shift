@@ -21,18 +21,25 @@ public class HealthBar : MonoBehaviour
     {
         if (player != null)
             player.OnHealthChanged += HandleHealthChanged;
+
+        // update při změně jazyka
+        LocalizationManager.OnLanguageChanged += UpdateText;
     }
 
     private void OnDisable()
     {
         if (player != null)
             player.OnHealthChanged -= HandleHealthChanged;
+
+        LocalizationManager.OnLanguageChanged -= UpdateText;
     }
 
     private void Start()
     {
         if (player != null)
             HandleHealthChanged(player.CurrentLives, player.MaxLives);
+
+        UpdateText();
     }
 
     private void HandleHealthChanged(int current, int max)
@@ -43,7 +50,21 @@ public class HealthBar : MonoBehaviour
             slider.value = current;
         }
 
-        if (livesText != null)
-            livesText.text = $"Lives: {current} / {max}";
+        UpdateText(current, max);
+    }
+
+    private void UpdateText()
+    {
+        if (player != null)
+            UpdateText(player.CurrentLives, player.MaxLives);
+    }
+
+    private void UpdateText(int current, int max)
+    {
+        if (livesText != null && LocalizationManager.Instance != null)
+        {
+            string label = LocalizationManager.Instance.GetText("lives");
+            livesText.text = $"{label}: {current} / {max}";
+        }
     }
 }

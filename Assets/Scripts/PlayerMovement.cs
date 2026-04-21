@@ -38,6 +38,7 @@ public class PlayerMovement : MonoBehaviour
     private bool wallRight;
     private bool isGrounded;
     private bool wasGrounded;
+    private bool wasPausedLastFrame = false;
 
     private float footstepTimer;
 
@@ -69,6 +70,21 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        bool isPaused = GameManager.Instance != null && GameManager.Instance.IsPaused;
+
+        if (isPaused && !wasPausedLastFrame)
+        {
+            FreezePlayer();
+        }
+        else if (!isPaused && wasPausedLastFrame)
+        {
+            UnfreezePlayer();
+        }
+
+        wasPausedLastFrame = isPaused;
+
+        if (isPaused) return;
+
         CheckFall();
         CheckGround();
         CheckWalls();
@@ -228,5 +244,17 @@ public class PlayerMovement : MonoBehaviour
             spawnPoint != null
                 ? (Vector2)spawnPoint.position
                 : Vector2.zero;
+    }
+
+    // ---------------- FREEZE ----------------
+    private void FreezePlayer()
+    {
+        rb.linearVelocity = Vector2.zero;
+        rb.constraints = RigidbodyConstraints2D.FreezeAll;
+    }
+
+    private void UnfreezePlayer()
+    {
+        rb.constraints = RigidbodyConstraints2D.FreezeRotation;
     }
 }
