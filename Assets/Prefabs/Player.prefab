@@ -315,7 +315,7 @@ MonoBehaviour:
   groundCheckRadius: 0.15
   spawnPoint: {fileID: 0}
   fallThreshold: -10
-  graphics: {fileID: 0}
+  graphics: {fileID: 2805599036375626145}
   jumpSound: {fileID: 8300000, guid: 53b13f8d8a830e24b9b3744e688c4527, type: 3}
   landSound: {fileID: 8300000, guid: ca581bc2463a2854dba672f0d0cc46c2, type: 3}
   footstepSounds:
