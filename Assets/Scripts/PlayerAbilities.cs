@@ -20,8 +20,8 @@ public class PlayerAbilities : MonoBehaviour
     private float lockGroundResetUntil = -999f;
 
     [Header("Dash")]
-    [SerializeField] private float dashSpeed = 16f;
-    [SerializeField] private float dashDuration = 0.15f;
+    [SerializeField] private float dashSpeed = 18f;
+    [SerializeField] private float dashDuration = 0.25f;
     [SerializeField] private float dashCooldown = 0.6f;
     [SerializeField] private KeyCode dashKey = KeyCode.LeftShift;
 

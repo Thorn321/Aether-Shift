@@ -15,6 +15,15 @@
     { "key": "next_level", "value": "Next Level" },
     { "key": "back_to_main_menu", "value": "Go to Main Menu" },
     { "key": "resume_game", "value": "Resume game" },
-    { "key": "game_paused", "value": "Game Paused" }
+    { "key": "game_paused", "value": "Game Paused" },
+    { "key": "confirm", "value": "Confirm" },
+    {
+      "key": "dialog_doublejump_unlocked",
+      "value": "Double jump unlocked!\nPress SPACE in the air to double jump."
+    },
+    {
+      "key": "dialog_dash_unlocked",
+      "value": "Dash unlocked!\nPress E to quicky dash forwards\nin the direction you're facing."
+    }
   ]
 }

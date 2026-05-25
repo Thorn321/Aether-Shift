@@ -314,7 +314,7 @@ MonoBehaviour:
   groundCheckOffset: {x: 0, y: -0.6}
   groundCheckRadius: 0.15
   spawnPoint: {fileID: 0}
-  fallThreshold: -10
+  fallThreshold: -50
   graphics: {fileID: 2805599036375626145}
   jumpSound: {fileID: 8300000, guid: 53b13f8d8a830e24b9b3744e688c4527, type: 3}
   landSound: {fileID: 8300000, guid: ca581bc2463a2854dba672f0d0cc46c2, type: 3}
@@ -352,14 +352,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83a98c19fc114da4b851b3958bb5c4a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAbilities
-  doubleJumpUnlocked: 1
-  dashUnlocked: 1
+  doubleJumpUnlocked: 0
+  dashUnlocked: 0
   maxJumps: 2
   jumpCooldown: 0.12
   groundResetLock: 0.05
   doubleJumpMultiplier: 0.85
-  dashSpeed: 16
-  dashDuration: 0.15
+  dashSpeed: 18
+  dashDuration: 0.25
   dashCooldown: 0.6
   dashKey: 101
   graphics: {fileID: 2805599036375626145}

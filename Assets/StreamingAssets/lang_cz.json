@@ -15,6 +15,15 @@
     { "key": "next_level", "value": "Další level" },
     { "key": "back_to_main_menu", "value": "Do hlavního menu" },
     { "key": "resume_game", "value": "Pokračovat ve hře" },
-    { "key": "game_paused", "value": "Hra pozastavena" }
+    { "key": "game_paused", "value": "Hra pozastavena" },
+    { "key": "confirm", "value": "Potvrdit" },
+    {
+      "key": "dialog_doublejump_unlocked",
+      "value": "Dvojitý skok odemčen!\nStiskni MEZERNÍK ve vzduchu."
+    },
+    {
+      "key": "dialog_dash_unlocked",
+      "value": "Dash odemčen!\nStiskni E pro rychý dash ve směru kam se koukáš."
+    }
   ]
 }
