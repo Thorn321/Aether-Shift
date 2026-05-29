@@ -39,6 +39,7 @@ public class PlayerAbilities : MonoBehaviour
     private Rigidbody2D rb;
 
     private bool wasGrounded;
+    private bool airDashUsed;
 
     private void Awake()
     {
@@ -83,6 +84,8 @@ public class PlayerAbilities : MonoBehaviour
     private void ResetJumps()
     {
         jumpsLeft = doubleJumpUnlocked ? maxJumps : 1;
+
+        airDashUsed = false;
     }
 
     private void HandleJumpInput()
@@ -131,6 +134,9 @@ public class PlayerAbilities : MonoBehaviour
 
     private void HandleDashInput()
     {
+        if (!movement.IsGrounded && airDashUsed)
+            return;
+
         if (!dashUnlocked)
             return;
 
@@ -148,6 +154,8 @@ public class PlayerAbilities : MonoBehaviour
 
     private IEnumerator DashRoutine()
     {
+        if (!movement.IsGrounded)
+            airDashUsed = true;
         lastDashTime = Time.time;
         isDashing = true;
         if (dashSound != null)
