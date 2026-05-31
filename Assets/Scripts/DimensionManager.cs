@@ -21,6 +21,8 @@ public class DimensionManager : MonoBehaviour
     [Header("Dark Dimension Settings")]
     [SerializeField] private float maxDarkTime = 5f;
     private float darkTimer;
+    [SerializeField] private float darkAnimationSpeed = 0.5f;
+    [SerializeField] private float lightAnimationSpeed = 1f;
 
     [Header("Camera Effects")]
     [SerializeField] private DarkDimensionEffect darkEffect;
@@ -93,6 +95,7 @@ public class DimensionManager : MonoBehaviour
 
         darkEffect.SetDark(true);
         UpdateTilemaps();
+        ApplyAnimationSpeed(darkAnimationSpeed);
 
         if (switchToDarkSound != null)
             SFXManager.Instance.PlaySound(switchToDarkSound, 1f);
@@ -110,6 +113,7 @@ public class DimensionManager : MonoBehaviour
 
         darkEffect.SetDark(false);
         UpdateTilemaps();
+        ApplyAnimationSpeed(lightAnimationSpeed);
 
         if (switchToLightSound != null)
             SFXManager.Instance.PlaySound(switchToLightSound, 1f);
@@ -132,5 +136,18 @@ public class DimensionManager : MonoBehaviour
 
         if (tilemapDark != null)
             tilemapDark.SetActive(currentDimension == Dimension.Dark);
+    }
+
+    private void ApplyAnimationSpeed(float speed)
+    {
+        Animator[] animators = FindObjectsOfType<Animator>();
+
+        foreach (var anim in animators)
+        {
+            if (anim.gameObject.CompareTag("Player"))
+                continue; 
+
+            anim.speed = speed;
+        }
     }
 }

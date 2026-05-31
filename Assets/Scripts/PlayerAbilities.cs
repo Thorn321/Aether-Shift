@@ -9,15 +9,9 @@ public class PlayerAbilities : MonoBehaviour
 
     [Header("Double Jump")]
     [SerializeField] private int maxJumps = 2;
-    [SerializeField] private float jumpCooldown = 0.12f;
-    [SerializeField] private float groundResetLock = 0.05f;
-
-    // síla double jumpu
-    [SerializeField, Range(0.5f, 1f)] private float doubleJumpMultiplier = 0.85f;
+    [SerializeField] private float doubleJumpMultiplier = 0.85f;
 
     private int jumpsLeft;
-    private float lastJumpTime = -999f;
-    private float lockGroundResetUntil = -999f;
 
     [Header("Dash")]
     [SerializeField] private float dashSpeed = 18f;
@@ -25,11 +19,20 @@ public class PlayerAbilities : MonoBehaviour
     [SerializeField] private float dashCooldown = 0.6f;
     [SerializeField] private KeyCode dashKey = KeyCode.LeftShift;
 
-    private float lastDashTime = -999f;
+    private float lastDashTime;
     private bool isDashing;
+    private bool airDashUsed;
 
-    [Header("Graphics (for facing direction)")]
+    [Header("Graphics")]
     [SerializeField] private Transform graphics;
+    private SpriteRenderer graphicsSR;
+
+    [Header("Afterimage")]
+    [SerializeField] private GameObject afterimagePrefab;
+    [SerializeField] private float afterimageSpawnRate = 0.03f;
+
+    [Header("Effects")]
+    [SerializeField] private TrailRenderer trail;
 
     [Header("Audio")]
     [SerializeField] private AudioClip dashSound;
@@ -37,116 +40,97 @@ public class PlayerAbilities : MonoBehaviour
 
     private PlayerMovement movement;
     private Rigidbody2D rb;
-
+    private Animator anim;
+    private static readonly int DashHash = Animator.StringToHash("Dash");
     private bool wasGrounded;
-    private bool airDashUsed;
+
+    private static readonly Vector3 normalScale = new(1f, 1f, 1f);
 
     private void Awake()
     {
         movement = GetComponent<PlayerMovement>();
         rb = GetComponent<Rigidbody2D>();
+        anim = GetComponentInChildren<Animator>();
 
-        if (graphics == null)
+        if (!graphics)
             graphics = transform.Find("Graphics");
+
+        if (graphics)
+            graphicsSR = graphics.GetComponent<SpriteRenderer>();
+
+        if (trail)
+            trail.emitting = false;
     }
 
     private void Start()
     {
         ResetJumps();
-        wasGrounded = movement != null && movement.IsGrounded;
+        wasGrounded = movement.IsGrounded;
     }
 
     private void Update()
     {
-        HandleJumpInput();
-        HandleDashInput();
+        HandleJump();
+        HandleDash();
         HandleLandingReset();
     }
 
-    // ---------------- LANDING RESET ----------------
+    // ===================== RESET =====================
 
     private void HandleLandingReset()
     {
-        if (movement == null)
-            return;
-
-        bool groundedNow = movement.IsGrounded;
-
-        // Reset jen při dopadu (false -> true) + po locku
-        if (!wasGrounded && groundedNow && Time.time >= lockGroundResetUntil)
+        if (movement.IsGrounded && !wasGrounded)
+        {
             ResetJumps();
+        }
 
-        wasGrounded = groundedNow;
+        wasGrounded = movement.IsGrounded;
     }
-
-    // ---------------- JUMP ----------------
 
     private void ResetJumps()
     {
         jumpsLeft = doubleJumpUnlocked ? maxJumps : 1;
-
         airDashUsed = false;
     }
 
-    private void HandleJumpInput()
+    // ===================== JUMP =====================
+
+    private void HandleJump()
     {
-        if (!Input.GetButtonDown("Jump"))
-            return;
+        if (!Input.GetButtonDown("Jump")) return;
+        if (isDashing) return;
 
-        if (isDashing)
-            return;
-
-        if (Time.time - lastJumpTime < jumpCooldown)
-            return;
-
-        if (movement == null)
-            return;
-
-        // Pokud double jump není odemčený -> skok jen ze země
         if (!doubleJumpUnlocked && !movement.IsGrounded)
             return;
 
         if (jumpsLeft <= 0)
             return;
 
-        DoJump();
-        jumpsLeft--;
-        if (doubleJumpSound != null)
-            SFXManager.Instance.PlaySound(doubleJumpSound, 1.6f);
+        float force = movement.IsGrounded
+            ? movement.JumpForce
+            : movement.JumpForce * doubleJumpMultiplier;
 
-        lastJumpTime = Time.time;
-        lockGroundResetUntil = Time.time + groundResetLock; // zabrání okamžitému resetu skoků po odrazu
-    }
-
-    private void DoJump()
-    {
-        // když stojíš na zemi => plná síla
-        // když nejsi na zemi (double jump) => slabší
-        float force = movement.IsGrounded ? movement.JumpForce : movement.JumpForce * doubleJumpMultiplier;
-
-        rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0);
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, force);
 
         movement.PlayJumpAnim();
+
+        if (doubleJumpSound)
+            SFXManager.Instance.PlaySound(doubleJumpSound, 1.6f);
+
+        jumpsLeft--;
     }
 
-    // ---------------- DASH ----------------
+    // ===================== DASH =====================
 
-    private void HandleDashInput()
+    private void HandleDash()
     {
+        if (!dashUnlocked) return;
+        if (!Input.GetKeyDown(dashKey)) return;
+        if (isDashing) return;
+        if (Time.time - lastDashTime < dashCooldown) return;
+
         if (!movement.IsGrounded && airDashUsed)
-            return;
-
-        if (!dashUnlocked)
-            return;
-
-        if (!Input.GetKeyDown(dashKey))
-            return;
-
-        if (isDashing)
-            return;
-
-        if (Time.time - lastDashTime < dashCooldown)
             return;
 
         StartCoroutine(DashRoutine());
@@ -154,43 +138,118 @@ public class PlayerAbilities : MonoBehaviour
 
     private IEnumerator DashRoutine()
     {
+        isDashing = true;
+        lastDashTime = Time.time;
+
+        PlayDashAnim();
+
         if (!movement.IsGrounded)
             airDashUsed = true;
-        lastDashTime = Time.time;
-        isDashing = true;
-        if (dashSound != null)
+
+        float input = Input.GetAxisRaw("Horizontal");
+        float dir = Mathf.Abs(input) > 0.01f
+            ? Mathf.Sign(input)
+            : (graphics.localScale.x < 0 ? -1 : 1);
+
+        if (dashSound)
             SFXManager.Instance.PlaySoundRandomPitch(dashSound, 1f, 1.3f);
 
         float originalGravity = rb.gravityScale;
-        rb.gravityScale = 0f;
+        rb.gravityScale = 0;
 
-        // Směr: když držíš input, podle inputu. Když stojíš, podle facing (Graphics scale)
-        float input = Input.GetAxisRaw("Horizontal");
-        float dir;
+        if (trail) trail.emitting = true;
 
-        if (Mathf.Abs(input) > 0.01f)
-        {
-            dir = Mathf.Sign(input);
-        }
-        else
-        {
-            // fallback: podle toho, kam se hráč dívá (Graphics)
-            dir = (graphics != null && graphics.localScale.x < 0f) ? -1f : 1f;
-        }
+        //StartCoroutine(Squash());
+        StartCoroutine(SpawnAfterimages());
 
         float t = 0f;
+
         while (t < dashDuration)
         {
-            rb.linearVelocity = new Vector2(dir * dashSpeed, 0f);
+            rb.linearVelocity = new Vector2(dir * dashSpeed, 0);
             t += Time.deltaTime;
             yield return null;
         }
 
         rb.gravityScale = originalGravity;
+
+        if (trail) trail.emitting = false;
+
         isDashing = false;
     }
 
-    // ---------------- PUBLIC API (unlock) ----------------
+    // ===================== AFTERIMAGES =====================
+
+    private IEnumerator SpawnAfterimages()
+    {
+        while (isDashing)
+        {
+            if (afterimagePrefab && graphicsSR)
+            {
+                GameObject img = Instantiate(afterimagePrefab, graphics.position, graphics.rotation);
+
+                SpriteRenderer sr = img.GetComponent<SpriteRenderer>();
+
+                sr.sprite = graphicsSR.sprite;
+                sr.flipX = graphicsSR.flipX;
+
+                Color c = sr.color;
+                c.a = 0.5f;
+                sr.color = c;
+
+                img.transform.localScale = graphics.localScale;
+            }
+
+            yield return new WaitForSeconds(afterimageSpawnRate);
+        }
+    }
+
+    // ===================== JUICE =====================
+
+    private IEnumerator Squash()
+    {
+        if (!graphics) yield break;
+
+        Vector3 original = graphics.localScale;
+        Vector3 stretched = new Vector3(1.8f, 0.55f, 1f);
+
+        float duration = 0.15f;
+        float t = 0f;
+
+        while (t < duration)
+        {
+            graphics.localScale = Vector3.Lerp(original, stretched, t / duration);
+            t += Time.deltaTime;
+            yield return null;
+        }
+
+        graphics.localScale = stretched;
+
+        yield return new WaitForSeconds(0.05f);
+
+        t = 0f;
+
+        while (t < duration)
+        {
+            graphics.localScale = Vector3.Lerp(stretched, original, t / duration);
+            t += Time.deltaTime;
+            yield return null;
+        }
+
+        graphics.localScale = original;
+    }
+
+    // ===================== ANIMATION ====================
+
+    public void PlayDashAnim()
+    {
+        if (!anim) return;
+
+        anim.ResetTrigger(DashHash);
+        anim.SetTrigger(DashHash);
+    }
+
+    // ===================== UNLOCKS =====================
 
     public void UnlockDoubleJump()
     {

@@ -6,9 +6,22 @@ public class EnemyFlying : Enemy
     [SerializeField] private Transform pointA;
     [SerializeField] private Transform pointB;
 
+    [Header("Visual")]
+    [SerializeField] private SpriteRenderer sr;
+    [SerializeField] private Animator anim;
+
     private Vector2 worldPointA;
     private Vector2 worldPointB;
     private Vector2 currentTarget;
+
+    private void Awake()
+    {
+        if (!sr)
+            sr = GetComponentInChildren<SpriteRenderer>();
+
+        if (!anim)
+            anim = GetComponentInChildren<Animator>();
+    }
 
     protected override void Start()
     {
@@ -25,7 +38,7 @@ public class EnemyFlying : Enemy
         CheckArrival();
     }
 
-    // ---------------- INITIALIZATION ----------------
+    // ---------------- INIT ----------------
 
     private bool ValidatePoints()
     {
@@ -52,25 +65,28 @@ public class EnemyFlying : Enemy
         Vector2 direction = (currentTarget - position).normalized;
 
         rb.linearVelocity = direction * moveSpeed * timeMultiplier;
-        Flip(direction);
+
+        HandleFlip(direction);
     }
 
     private void CheckArrival()
     {
-        if (Vector2.Distance(rb.position, currentTarget) < 0.1f)
+        if (Vector2.Distance(rb.position, currentTarget) < 0.15f)
             SwitchTarget();
     }
 
     private void SwitchTarget()
     {
-        currentTarget = currentTarget == worldPointA ? worldPointB : worldPointA;
+        currentTarget = (currentTarget == worldPointA) ? worldPointB : worldPointA;
     }
 
-    private void Flip(Vector2 direction)
-    {
-        if (direction.x == 0) return;
+    // ---------------- VISUAL ----------------
 
-        float scaleX = direction.x > 0 ? 1f : -1f;
-        transform.localScale = new Vector3(scaleX, 1f, 1f);
+    private void HandleFlip(Vector2 direction)
+    {
+        if (!sr) return;
+
+        if (Mathf.Abs(direction.x) > 0.01f)
+            sr.flipX = direction.x < 0;
     }
 }

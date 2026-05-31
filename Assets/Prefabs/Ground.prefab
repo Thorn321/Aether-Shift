@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 629090322945957180}
   - component: {fileID: 4432373333653895029}
   - component: {fileID: 8065282091073158696}
+  - component: {fileID: 8331726033281858989}
   m_Layer: 3
   m_Name: Ground
   m_TagString: Ground
@@ -152,3 +153,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DimensionObject
   visibleInDimension: 0
+--- !u!114 &8331726033281858989
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1025361006443603573}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44d265e47068a564f93916bea0fc19e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Surface
+  type: 0

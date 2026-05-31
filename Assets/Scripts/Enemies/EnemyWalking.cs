@@ -8,6 +8,19 @@ public class EnemyWalking : Enemy
     [SerializeField] private float horizontalOffset = 0.5f;
     [SerializeField] private float verticalOffset = 0.5f;
 
+    [Header("Visual")]
+    [SerializeField] private SpriteRenderer sr;
+    [SerializeField] private Animator anim;
+
+    private void Awake()
+    {
+        if (!sr)
+            sr = GetComponentInChildren<SpriteRenderer>();
+
+        if (!anim)
+            anim = GetComponentInChildren<Animator>();
+    }
+
     protected override void Move()
     {
         MoveHorizontally();
@@ -20,6 +33,8 @@ public class EnemyWalking : Enemy
     {
         float direction = movingRight ? 1f : -1f;
         rb.linearVelocity = new Vector2(direction * moveSpeed * timeMultiplier, rb.linearVelocity.y);
+
+        HandleFlip(direction);
     }
 
     // ---------------- ENVIRONMENT CHECK ----------------
@@ -44,7 +59,7 @@ public class EnemyWalking : Enemy
         }
     }
 
-    // ---------------- VISUAL DEBUG ----------------
+    // ---------------- VISUAL ----------------
 
     private void DrawDebugRays(Vector2 bottom, Vector2 top, float direction)
     {
@@ -53,11 +68,18 @@ public class EnemyWalking : Enemy
         Debug.DrawRay(top, Vector2.right * direction * rayLength, Color.red);
     }
 
-    // ---------------- DIRECTION ----------------
+    // ---------------- FLIP (FIXED) ----------------
+
+    private void HandleFlip(float direction)
+    {
+        if (!sr) return;
+
+        if (Mathf.Abs(direction) > 0.01f)
+            sr.flipX = direction < 0;
+    }
 
     private void Flip()
     {
         movingRight = !movingRight;
-        transform.Rotate(0f, 180f, 0f);
     }
 }

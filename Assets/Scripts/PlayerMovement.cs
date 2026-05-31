@@ -1,62 +1,72 @@
-﻿using UnityEngine;
+﻿using Unity.VisualScripting;
+using UnityEngine;
+
+public enum SurfaceType
+{
+    Grass,
+    Stone
+}
 
 public class PlayerMovement : MonoBehaviour
 {
-    [Header("Movement Settings")]
+    [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float jumpForce = 12f;
 
-    [Header("Environment Check")]
+    [Header("Ground Check")]
     [SerializeField] private LayerMask groundLayer;
-    [SerializeField] private LayerMask enemyLayer;
-    [SerializeField] private float wallCheckDistance = 0.05f;
-    [SerializeField] private Vector2 wallCheckBottomOffset = new Vector2(0, -0.4f);
-    [SerializeField] private Vector2 wallCheckTopOffset = new Vector2(0, 0.4f);
-    [SerializeField] private Vector2 groundCheckOffset = new Vector2(0, -0.6f);
+    [SerializeField] private Vector2 groundCheckOffset = new(0, -0.6f);
     [SerializeField] private float groundCheckRadius = 0.15f;
 
-    [Header("Starting Point")]
-    [SerializeField] private Transform spawnPoint;
+    [Header("Wall Check")]
+    [SerializeField] private float wallCheckDistance = 0.05f;
+    [SerializeField] private Vector2 wallBottomOffset = new(0, -0.4f);
+    [SerializeField] private Vector2 wallTopOffset = new(0, 0.4f);
 
-    [Header("Fall Settings")]
-    [SerializeField] private float fallThreshold = -10f;
-
-    [Header("Graphics")]
-    [SerializeField] private Transform graphics;
+    [Header("Footsteps")]
+    [SerializeField] private AudioClip[] grassFootsteps;
+    [SerializeField] private AudioClip[] stoneFootsteps;
+    [SerializeField] private float footstepInterval = 0.4f;
 
     [Header("Audio")]
     [SerializeField] private AudioClip jumpSound;
     [SerializeField] private AudioClip landSound;
-    [SerializeField] private AudioClip[] footstepSounds;
-    [SerializeField] private float footstepInterval = 0.4f;
+
+    [Header("Misc")]
+    [SerializeField] private Transform graphics;
+    [SerializeField] private Transform spawnPoint;
+    [SerializeField] private float fallThreshold = -10f;
 
     private Rigidbody2D rb;
     private PlayerHealth health;
     private Animator anim;
 
-    private bool wallLeft;
-    private bool wallRight;
+
+
     private bool isGrounded;
     private bool wasGrounded;
-    private bool wasPausedLastFrame = false;
+    private bool wallLeft;
+    private bool wallRight;
 
     private float footstepTimer;
 
-    private Vector2 latestCheckpoint;
+    private SurfaceType currentSurface = SurfaceType.Stone;
+    private Vector2 checkpoint;
 
-    public float SpeedMultiplier { get; set; } = 1f;
+    // ---------------- ANIMATION CACHE ----------------
+    private float lastSpeed;
 
-    public bool IsGrounded => isGrounded;
-    public Rigidbody2D RB => rb;
-    public float JumpForce => jumpForce;
-
-    public float MoveSpeed => moveSpeed * SpeedMultiplier;
-    public float BaseMoveSpeed => moveSpeed;
-
+    // ---------------- HASHES ----------------
     private static readonly int SpeedHash = Animator.StringToHash("Speed");
     private static readonly int GroundedHash = Animator.StringToHash("Grounded");
-    private static readonly int HurtHash = Animator.StringToHash("Hurt");
+    private static readonly int YVelHash = Animator.StringToHash("YVelocity");
     private static readonly int JumpHash = Animator.StringToHash("Jump");
+    private static readonly int HurtHash = Animator.StringToHash("Hurt");
+    private static readonly int DashHash = Animator.StringToHash("Dash");
+
+    public float SpeedMultiplier { get; set; } = 1f;
+    public bool IsGrounded => isGrounded;
+    public float JumpForce => jumpForce;
 
     private void Awake()
     {
@@ -64,197 +74,194 @@ public class PlayerMovement : MonoBehaviour
         health = GetComponent<PlayerHealth>();
         anim = GetComponentInChildren<Animator>();
 
-        if (graphics == null)
+        if (!graphics)
             graphics = transform.Find("Graphics");
     }
 
     private void Update()
     {
-        bool isPaused = GameManager.Instance != null && GameManager.Instance.IsPaused;
-
-        if (isPaused && !wasPausedLastFrame)
-        {
-            FreezePlayer();
-        }
-        else if (!isPaused && wasPausedLastFrame)
-        {
-            UnfreezePlayer();
-        }
-
-        wasPausedLastFrame = isPaused;
-
-        if (isPaused) return;
-
-        CheckFall();
-        CheckGround();
-        CheckWalls();
-        HandleMovement();
-        UpdateAnimatorParams();
-    }
-
-    // ---------------- CHECKS ----------------
-
-    private void CheckFall()
-    {
-        if (transform.position.y >= fallThreshold)
+        if (GameManager.Instance != null && GameManager.Instance.IsPaused)
             return;
 
-        if (health != null)
-        {
-            health.TakeDamage(1);
+        CheckGround();
+        CheckWalls();
+        UpdateSurface();
 
-            if (anim != null)
-                anim.SetTrigger(HurtHash);
-        }
-        else
-        {
-            ReturnToCheckpoint();
-        }
+        HandleMovement();
+        UpdateAnimator();
+
+        CheckFall();
     }
+
+    // ---------------- GROUND ----------------
 
     private void CheckGround()
     {
-        Vector2 checkPos = (Vector2)transform.position + groundCheckOffset;
+        Vector2 pos = (Vector2)transform.position + groundCheckOffset;
 
-        bool groundedNow =
-            Physics2D.OverlapCircle(checkPos, groundCheckRadius, groundLayer);
+        bool groundedNow = Physics2D.OverlapCircle(pos, groundCheckRadius, groundLayer);
 
-        if (!wasGrounded && groundedNow)
-        {
-            if (landSound != null)
-                SFXManager.Instance.PlaySoundRandomPitch(landSound, 0.9f, 1.3f);
-        }
+        if (!wasGrounded && groundedNow && landSound != null)
+            SFXManager.Instance.PlaySoundRandomPitch(landSound, 0.9f, 1.3f);
 
         wasGrounded = groundedNow;
         isGrounded = groundedNow;
     }
 
+    // ---------------- WALLS ----------------
+
     private void CheckWalls()
     {
         Vector2 pos = transform.position;
 
-        Vector2 bottomOrigin = pos + wallCheckBottomOffset;
-        Vector2 topOrigin = pos + wallCheckTopOffset;
+        Vector2 bottom = pos + wallBottomOffset;
+        Vector2 top = pos + wallTopOffset;
 
-        float rayLength = wallCheckDistance + 0.5f;
+        float dist = wallCheckDistance + 0.5f;
 
         wallRight =
-            Physics2D.Raycast(bottomOrigin, Vector2.right, rayLength, groundLayer) ||
-            Physics2D.Raycast(topOrigin, Vector2.right, rayLength, groundLayer);
+            Physics2D.Raycast(bottom, Vector2.right, dist, groundLayer) ||
+            Physics2D.Raycast(top, Vector2.right, dist, groundLayer);
 
         wallLeft =
-            Physics2D.Raycast(bottomOrigin, Vector2.left, rayLength, groundLayer) ||
-            Physics2D.Raycast(topOrigin, Vector2.left, rayLength, groundLayer);
+            Physics2D.Raycast(bottom, Vector2.left, dist, groundLayer) ||
+            Physics2D.Raycast(top, Vector2.left, dist, groundLayer);
     }
 
     // ---------------- MOVEMENT ----------------
 
     private void HandleMovement()
     {
-        float moveInput = Input.GetAxisRaw("Horizontal");
+        float input = Input.GetAxisRaw("Horizontal");
 
-        if ((moveInput > 0 && wallRight) || (moveInput < 0 && wallLeft))
-            moveInput = 0f;
+        if ((input > 0 && wallRight) || (input < 0 && wallLeft))
+            input = 0;
 
-        float currentSpeed = moveSpeed * SpeedMultiplier;
-        rb.linearVelocity = new Vector2(moveInput * currentSpeed, rb.linearVelocity.y);
+        rb.linearVelocity = new Vector2(input * moveSpeed * SpeedMultiplier, rb.linearVelocity.y);
 
-        // Flip
-        if (graphics != null && moveInput != 0f)
-        {
-            float scaleX = moveInput > 0f ? 1f : -1f;
-            graphics.localScale = new Vector3(scaleX, 1f, 1f);
-        }
+        if (graphics && input != 0)
+            graphics.localScale = new Vector3(Mathf.Sign(input), 1, 1);
 
-        // Footsteps
-        if (isGrounded && Mathf.Abs(rb.linearVelocity.x) > 0.1f)
-        {
-            footstepTimer -= Time.deltaTime;
-
-            if (footstepTimer <= 0f)
-            {
-                if (footstepSounds.Length > 0)
-                {
-                    int i = Random.Range(0, footstepSounds.Length);
-                    SFXManager.Instance.PlaySoundRandomPitch(footstepSounds[i], 0.9f, 1.5f);
-                }
-
-                footstepTimer = footstepInterval;
-            }
-        }
-        else
-        {
-            footstepTimer = 0f;
-        }
+        HandleFootsteps();
 
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-
-            if (jumpSound != null)
-                SFXManager.Instance.PlaySoundRandomPitch(jumpSound, 0.9f, 1.3f);
-
-            PlayJumpAnim();
+            Jump();
         }
     }
 
-    // ---------------- ANIMATION ----------------
-
-    private void UpdateAnimatorParams()
+    private void Jump()
     {
-        if (anim == null)
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+
+        if (jumpSound)
+            SFXManager.Instance.PlaySoundRandomPitch(jumpSound, 0.9f, 1.3f);
+
+        PlayJumpAnim();
+    }
+
+    private void UpdateSurface()
+    {
+        RaycastHit2D hit = Physics2D.Raycast(
+            (Vector2)transform.position + groundCheckOffset,
+            Vector2.down,
+            1f,
+            groundLayer
+        );
+
+        if (hit.collider != null && hit.collider.TryGetComponent(out Surface surface))
+            currentSurface = surface.type;
+        else
+            currentSurface = SurfaceType.Stone;
+    }
+
+    // ---------------- FOOTSTEPS ----------------
+
+    private void HandleFootsteps()
+    {
+        if (!isGrounded || Mathf.Abs(rb.linearVelocity.x) < 0.1f)
+        {
+            footstepTimer = 0;
             return;
+        }
+
+        footstepTimer -= Time.deltaTime;
+        if (footstepTimer > 0) return;
+
+        AudioClip[] set = currentSurface == SurfaceType.Grass
+            ? grassFootsteps
+            : stoneFootsteps;
+
+        if (set.Length > 0)
+        {
+            var clip = set[Random.Range(0, set.Length)];
+            SFXManager.Instance.PlaySoundRandomPitch(clip, 0.9f, 1.4f);
+        }
+
+        footstepTimer = footstepInterval;
+    }
+
+    // ---------------- ANIMATOR (CLEAN BLEND TREE SYSTEM) ----------------
+
+    private void UpdateAnimator()
+    {
+        if (!anim) return;
 
         float speed = Mathf.Abs(rb.linearVelocity.x);
-        anim.SetFloat(SpeedHash, speed);
 
+        if (speed < 0.05f)
+            speed = 0f;
+
+        float normalizedSpeed = speed / moveSpeed;
+
+        // debug (SPRÁVNĚ)
+        Debug.Log("Speed: " + normalizedSpeed);
+        Debug.Log("Grounded: " + isGrounded);
+
+        anim.SetFloat(SpeedHash, normalizedSpeed);
         anim.SetBool(GroundedHash, isGrounded);
+        anim.SetFloat(YVelHash, rb.linearVelocity.y);
     }
 
     public void PlayJumpAnim()
     {
-        if (anim != null)
-            anim.SetTrigger(JumpHash);
+        anim?.SetTrigger(JumpHash);
     }
 
-    // ---------------- CHECKPOINTS ----------------
-
-    public void SetCheckpoint(Vector2 pos)
+    public void PlayHurtAnim()
     {
-        latestCheckpoint = pos;
+        anim?.SetTrigger(HurtHash);
     }
+
+    public void PlayDashAnim()
+    {
+        anim?.SetTrigger(DashHash);
+    }
+
+    // ---------------- FALL ----------------
+
+    private void CheckFall()
+    {
+        if (transform.position.y > fallThreshold) return;
+
+        if (health)
+            health.TakeDamage(1);
+        else
+            ReturnToCheckpoint();
+
+        PlayHurtAnim();
+    }
+
+    // ---------------- CHECKPOINT ----------------
+
+    public void SetCheckpoint(Vector2 pos) => checkpoint = pos;
 
     public void ReturnToCheckpoint()
     {
         rb.linearVelocity = Vector2.zero;
 
-        transform.position =
-            latestCheckpoint != Vector2.zero
-                ? latestCheckpoint
-                : (spawnPoint != null
-                    ? (Vector2)spawnPoint.position
-                    : (Vector2)transform.position);
-    }
-
-    public void BackToSpawn()
-    {
-        rb.linearVelocity = Vector2.zero;
-
-        transform.position =
-            spawnPoint != null
-                ? (Vector2)spawnPoint.position
-                : Vector2.zero;
-    }
-
-    // ---------------- FREEZE ----------------
-    private void FreezePlayer()
-    {
-        rb.linearVelocity = Vector2.zero;
-        rb.constraints = RigidbodyConstraints2D.FreezeAll;
-    }
-
-    private void UnfreezePlayer()
-    {
-        rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+        transform.position = checkpoint != Vector2.zero
+            ? checkpoint
+            : (spawnPoint ? (Vector2)spawnPoint.position : transform.position);
     }
 }
