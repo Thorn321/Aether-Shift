@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 9051465192339557741}
   - component: {fileID: 550004144888480660}
   - component: {fileID: 433984143816440527}
+  - component: {fileID: 1920128683914544997}
   m_Layer: 3
   m_Name: KeyCollectible
   m_TagString: Untagged
@@ -83,8 +84,8 @@ SpriteRenderer:
   m_SortingLayer: 5
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 3625043607559282579, guid: 19fb86013d8c24d6cb8410c0aadf30fa, type: 3}
-  m_Color: {r: 0, g: 0.3882196, b: 1, a: 1}
+  m_Sprite: {fileID: -3495547579716694505, guid: fb0cc04d23a708a40aa14cb7203f0fd0, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -131,7 +132,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 0.5}
+    oldSize: {x: 0.9375, y: 1}
     newSize: {x: 1, y: 0.5}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -151,5 +152,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95cf6a3131bce314bb15645f5639ae09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KeyCollectible
-  keyId: test-key
+  keyId: level-2-key
   sfx: {fileID: 0}
+--- !u!114 &1920128683914544997
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2760699617042546965}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0c9122a29b617d4dbb751cdfde33372, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FloatEffect
+  floatAmount: 0.08
+  floatSpeed: 2
